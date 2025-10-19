@@ -8,22 +8,16 @@ This guide explains how to deploy the Cricket Scraper API to Render using the Re
 2. **Git Repository**: Your code should be in a Git repository (GitHub, GitLab, or Bitbucket)
 3. **Render CLI**: Install the Render command-line tool
 
-## Installation
+## Deployment Methods
 
-### Install Render CLI
+Render supports multiple deployment methods:
 
-#### Using npm (Recommended)
-```bash
-npm install -g @render-cloud/cli
-```
+1. **Web Dashboard** (Recommended - Easiest)
+2. **GitHub/GitLab Integration** (Automatic deployments)
+3. **Blueprint (render.yaml)** (Infrastructure as Code)
+4. **Render API** (For advanced automation)
 
-#### Alternative: Download Binary
-Visit [Render CLI Documentation](https://render.com/docs/cli) for platform-specific binaries.
-
-### Verify Installation
-```bash
-render --version
-```
+**Note:** Render does not have a traditional CLI tool like `@render-cloud/cli`. The easiest way to deploy is through the web dashboard or GitHub integration.
 
 ## Setup
 
