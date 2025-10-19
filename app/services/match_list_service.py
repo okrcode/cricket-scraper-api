@@ -28,11 +28,27 @@ def fetch_all_matches():
                 'live': catalogue.get('inPlay', False)
             })
 
+        # Sort matches: Live first, then OPEN before SUSPENDED, then by start time
+        def sort_key(match):
+            # Priority 1: Live matches first (True=1, False=0, invert to get True first)
+            live_priority = 0 if match.get('live') else 1
+            
+            # Priority 2: Status priority (OPEN before SUSPENDED)
+            status = match.get('status', 'N/A')
+            status_priority = 0 if status == 'OPEN' else (1 if status == 'SUSPENDED' else 2)
+            
+            # Priority 3: Start time (earliest first)
+            start_time = match.get('start_time', 'Z')
+            
+            return (live_priority, status_priority, start_time)
+        
+        matches.sort(key=sort_key)
+
         os.makedirs(DATA_DIR, exist_ok=True)
         with open(ALL_MATCHES_FILE, 'w', encoding='utf-8') as f:
             json.dump(matches, f, indent=4, ensure_ascii=False)
 
-        logger.info(f"Saved {len(matches)} matches.")
+        logger.info(f"Saved {len(matches)} matches (sorted: live first, then by status and time).")
         return matches
 
     except Exception as e:
