@@ -46,5 +46,5 @@ git_installer.exe
 # Logs
 *.log
 
-# Data files (optional - uncomment if you want to track them)
-# app/data/*.json
+# Data files (runtime generated - do not commit)
+app/data/*.json
