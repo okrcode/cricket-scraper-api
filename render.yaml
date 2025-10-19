@@ -1,0 +1,34 @@
+services:
+  - type: web
+    name: cricket-scraper-api
+    env: python
+    region: oregon
+    plan: starter
+    branch: main
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn app.main:app --workers 4 --worker-class uvicorn.workers.UvicornWorker --bind 0.0.0.0:$PORT --timeout 120 --keep-alive 5 --graceful-timeout 30
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.0
+      - key: HOST
+        value: 0.0.0.0
+      - key: PORT
+        value: 10000
+      - key: WORKERS
+        value: 4
+      - key: APP_NAME
+        value: Cricket Odds API
+      - key: VERSION
+        value: 1.0.0
+      - key: BASE_URL
+        value: https://api.radheexch.xyz
+      - key: SCRAPE_INTERVAL
+        value: 5
+      - key: LOG_LEVEL
+        value: INFO
+      - key: ALLOWED_DOMAINS
+        sync: false
+    disk:
+      name: cricket-data
+      mountPath: /opt/render/project/src/app/data
+      sizeGB: 1
