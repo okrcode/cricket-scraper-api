@@ -13,6 +13,14 @@ from app.core.config import LIVE_MATCH_ODDS_PUSH_URL
 
 logger = get_logger("live_match_service")
 
+# Create a persistent session for better connection handling
+import warnings
+warnings.filterwarnings('ignore', message='Unverified HTTPS request')
+
+# Global session for connection pooling and cookie persistence
+session = requests.Session()
+session.verify = True  # Keep SSL verification enabled
+
 def classify_market(name):
     name = (name or "").lower()
     if "match odds" in name:
@@ -38,28 +46,38 @@ def fetch_live_match(event_id, max_retries=3, retry_delay=1):
             
             # Enhanced headers with anti-bot measures
             enhanced_headers = HEADERS.copy()
+            
+            # Add random user agent rotation (more realistic)
+            user_agents = [
+                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36",
+                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36",
+                "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36",
+                "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36",
+                "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:132.0) Gecko/20100101 Firefox/132.0"
+            ]
+            
+            # Realistic browser headers
             enhanced_headers.update({
+                'User-Agent': random.choice(user_agents),
+                'Accept': 'application/json, text/plain, */*',
                 'Accept-Language': 'en-US,en;q=0.9',
                 'Accept-Encoding': 'gzip, deflate, br',
                 'Connection': 'keep-alive',
-                'Upgrade-Insecure-Requests': '1',
-                'Sec-Fetch-Dest': 'document',
-                'Sec-Fetch-Mode': 'navigate',
-                'Sec-Fetch-Site': 'none',
+                'Referer': 'https://api.radheexch.xyz/',
+                'Origin': 'https://api.radheexch.xyz',
+                'Sec-Fetch-Dest': 'empty',
+                'Sec-Fetch-Mode': 'cors',
+                'Sec-Fetch-Site': 'same-origin',
+                'sec-ch-ua': '"Google Chrome";v="131", "Chromium";v="131", "Not_A Brand";v="24"',
+                'sec-ch-ua-mobile': '?0',
+                'sec-ch-ua-platform': '"Windows"',
                 'Cache-Control': 'no-cache',
-                'Pragma': 'no-cache'
+                'Pragma': 'no-cache',
+                'DNT': '1'
             })
             
-            # Add random user agent rotation
-            user_agents = [
-                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36",
-                "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
-            ]
-            enhanced_headers['User-Agent'] = random.choice(user_agents)
-            
-            # Make request with timeout and retry logic
-            res = requests.get(
+            # Make request with timeout and retry logic using persistent session
+            res = session.get(
                 f"{MATCH_DETAIL_URL}/{event_id}", 
                 headers=enhanced_headers, 
                 timeout=20,
