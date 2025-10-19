@@ -136,7 +136,7 @@ def fetch_live_match(event_id, max_retries=3, retry_delay=1):
             
             # Validate essential fields exist
             if not data.get('event'):
-                logger.warning(f"Missing 'event' data for event {event_id}, skipping retries")
+                logger.info(f"Event {event_id} has no detailed data available (possibly not active or restricted)")
                 return None
 
             # Parse odds and score data with error handling
@@ -403,7 +403,7 @@ def update_live_matches():
                         logger.warning(f"Failed to push match data for {result.get('match_name', 'Unknown')}: {e}")
                 else:
                     failed_matches.append(match.get('match_name', 'Unknown'))
-                    logger.warning(f"Failed to process: {match.get('match_name', 'Unknown')}")
+                    logger.info(f"No data available for: {match.get('match_name', 'Unknown')} (event may not be active)")
             except Exception as e:
                 failed_matches.append(match.get('match_name', 'Unknown'))
                 logger.error(f"Exception processing {match.get('match_name', 'Unknown')}: {e}")
@@ -420,7 +420,7 @@ def update_live_matches():
         
         logger.info(f"Updated {len(results)} live matches successfully")
         if failed_matches:
-            logger.warning(f"Failed to process {len(failed_matches)} matches: {failed_matches}")
+            logger.info(f"{len(failed_matches)} matches had no detailed data available: {failed_matches}")
         
         return results
         
