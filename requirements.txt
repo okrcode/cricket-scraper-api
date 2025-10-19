@@ -2,6 +2,7 @@ fastapi
 uvicorn[standard]
 gunicorn
 requests
+aiohttp
 pydantic
 pydantic-settings
 apscheduler
