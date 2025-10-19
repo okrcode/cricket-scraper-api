@@ -348,18 +348,25 @@ def update_live_matches():
     results = []
     failed_matches = []
 
-    # Process matches concurrently
-    with ThreadPoolExecutor(max_workers=5) as executor:
+    # Process matches sequentially to avoid rate limiting
+    # Changed from max_workers=5 to max_workers=1 for better success rate
+    with ThreadPoolExecutor(max_workers=1) as executor:
         # Submit all tasks
         future_to_match = {
             executor.submit(fetch_live_match_sync, match): match 
             for match in live_matches
         }
         
-        # Collect results
-        for future in future_to_match:
+        # Collect results with delay between matches
+        for idx, future in enumerate(future_to_match):
             match = future_to_match[future]
             try:
+                # Add delay between matches (except first one) to avoid rate limiting
+                if idx > 0:
+                    delay = random.uniform(2, 4)  # 2-4 seconds between matches
+                    logger.info(f"Waiting {delay:.1f}s before processing next match...")
+                    time.sleep(delay)
+                
                 result = future.result(timeout=30)
                 if result:
                     results.append(result)
