@@ -36,6 +36,20 @@ class Settings(BaseSettings):
         description="External webhook URL to push live match data"
     )
     
+    # Proxy configuration (for cloud deployments to bypass IP blocking)
+    USE_PROXY: bool = Field(
+        default=False,
+        description="Enable proxy for external API requests"
+    )
+    PROXY_URL: Optional[str] = Field(
+        default=None,
+        description="Proxy server URL (e.g., http://user:pass@proxy:port or ScraperAPI URL)"
+    )
+    SCRAPER_API_KEY: Optional[str] = Field(
+        default=None,
+        description="ScraperAPI key for proxy service (alternative to PROXY_URL)"
+    )
+    
     # Logging
     LOG_LEVEL: str = Field(default="INFO", description="Logging level")
     

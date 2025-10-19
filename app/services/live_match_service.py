@@ -10,6 +10,7 @@ from app.core.config import HEADERS, MATCH_DETAIL_URL, ALL_MATCHES_FILE, LIVE_MA
 from app.core.logger import get_logger
 import requests
 from app.core.config import LIVE_MATCH_ODDS_PUSH_URL
+from app.core.settings import settings
 
 logger = get_logger("live_match_service")
 
@@ -20,6 +21,28 @@ warnings.filterwarnings('ignore', message='Unverified HTTPS request')
 # Global session for connection pooling and cookie persistence
 session = requests.Session()
 session.verify = True  # Keep SSL verification enabled
+
+# Configure proxy if enabled
+if settings.USE_PROXY:
+    if settings.SCRAPER_API_KEY:
+        # ScraperAPI integration
+        proxy_url = f"http://scraperapi:{settings.SCRAPER_API_KEY}@proxy-server.scraperapi.com:8001"
+        logger.info("Using ScraperAPI proxy for requests")
+    elif settings.PROXY_URL:
+        # Custom proxy
+        proxy_url = settings.PROXY_URL
+        logger.info(f"Using custom proxy for requests")
+    else:
+        proxy_url = None
+        logger.warning("USE_PROXY is True but no proxy configured")
+    
+    if proxy_url:
+        session.proxies = {
+            'http': proxy_url,
+            'https': proxy_url
+        }
+else:
+    logger.info("Direct connection (no proxy)")
 
 def classify_market(name):
     name = (name or "").lower()
